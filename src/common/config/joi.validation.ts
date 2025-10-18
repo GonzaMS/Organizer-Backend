@@ -8,6 +8,4 @@ export const JoiValidationSchema = Joi.object({
   offset: Joi.number().default(0),
 
   enviroment: Joi.string().default('dev'),
-
-  // postgresqlHost: Joi.required(),
 });
