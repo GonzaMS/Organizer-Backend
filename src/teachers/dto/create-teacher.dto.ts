@@ -1,29 +1,28 @@
 import {
   IsEmail,
   IsInt,
-  IsNotEmpty,
   IsOptional,
+  IsPositive,
   IsString,
+  Min,
   MinLength,
 } from 'class-validator';
 
 export class CreateTeacherDto {
-  @IsInt()
-  @IsNotEmpty()
-  id: number;
-
   @IsString()
   @MinLength(3)
   name: string;
 
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @IsOptional()
   aviability?: any;
 
   @IsOptional()
   @IsInt()
+  @IsPositive()
+  @Min(0)
   maxHoursPerWeek?: number;
 }
