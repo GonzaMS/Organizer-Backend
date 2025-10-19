@@ -1,8 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
 import { HttpAdapter } from '../interfaces/http-adapter.interface';
+import { Logger } from '@nestjs/common';
 
 export class AxiosAdapter implements HttpAdapter {
   private axios: AxiosInstance = axios;
+  private logger = new Logger('Axios adapter');
 
   async get<T>(url: string): Promise<T> {
     try {
@@ -10,7 +12,7 @@ export class AxiosAdapter implements HttpAdapter {
 
       return data;
     } catch (error) {
-      // We log the error with pino
+      this.logger.log(error);
       throw new Error(error.message);
     }
   }
