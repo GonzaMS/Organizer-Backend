@@ -6,6 +6,9 @@ import { ConfigModule } from '@nestjs/config';
 import { EnvConfiguration } from './common/config/env.config';
 import { JoiValidationSchema } from './common/config/joi.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SubjectsModule } from './subjects/subjects.module';
+import { FacultyModule } from './faculty/faculty.module';
+import { ClassroomModule } from './classroom/classroom.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TeachersModule,
     SeedModule,
     CommonModule,
+    SubjectsModule,
+    FacultyModule,
+    ClassroomModule,
   ],
   controllers: [],
   providers: [],
