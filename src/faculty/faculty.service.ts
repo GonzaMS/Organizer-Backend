@@ -59,6 +59,28 @@ export class FacultyService {
     return faculty;
   }
 
+  async findOneWithTeachers(id: string) {
+    const faculty = await this.facultyService.findOne({
+      where: { id },
+      relations: ['teacher'],
+    });
+
+    if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
+
+    return faculty;
+  }
+
+  async findOneWithClassrooms(id: string) {
+    const faculty = await this.facultyService.findOne({
+      where: { id },
+      relations: ['classroom'],
+    });
+
+    if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
+
+    return faculty;
+  }
+
   async update(id: string, updateFacultyDto: UpdateFacultyDto) {
     const faculty = await this.facultyService.preload({
       id,
@@ -81,9 +103,9 @@ export class FacultyService {
   async remove(id: string) {
     const faculty = await this.findOne(id);
 
-    await this.facultyService.remove(faculty);
-
     if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
+
+    await this.facultyService.remove(faculty);
 
     return faculty;
   }
