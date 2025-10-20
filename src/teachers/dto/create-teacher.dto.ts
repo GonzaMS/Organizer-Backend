@@ -1,9 +1,10 @@
 import {
   IsEmail,
   IsInt,
+  IsObject,
   IsOptional,
-  IsPositive,
   IsString,
+  IsUUID,
   Min,
   MinLength,
 } from 'class-validator';
@@ -14,15 +15,17 @@ export class CreateTeacherDto {
   name: string;
 
   @IsEmail()
-  @IsOptional()
-  email?: string;
+  email: string;
 
   @IsOptional()
-  aviability?: any;
+  @IsObject()
+  availability?: Record<string, string[]>;
 
   @IsOptional()
   @IsInt()
-  @IsPositive()
-  @Min(0)
+  @Min(1)
   maxHoursPerWeek?: number;
+
+  @IsUUID()
+  facultyId: string;
 }

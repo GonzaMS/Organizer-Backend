@@ -12,6 +12,7 @@ import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Teacher } from './entities/teacher.entity';
+import { Faculty } from 'src/faculty/entities/faculty.entity';
 
 @Injectable()
 export class TeachersService {
@@ -22,18 +23,34 @@ export class TeachersService {
 
   constructor(
     @InjectRepository(Teacher)
-    private readonly teacherRepository: Repository<Teacher>,
+    private readonly teacherRepo: Repository<Teacher>,
+
+    @InjectRepository(Faculty)
+    private readonly facultyRepo: Repository<Faculty>,
+
     private readonly configService: ConfigService,
   ) {
     this.defaultLimit = configService.get<number>('DEFAULT_LIMIT')!;
     this.offset = configService.get<number>('OFFSET')!;
-    this.logger.log('TeacherService inicializado');
   }
 
   async create(createTeacherDto: CreateTeacherDto) {
+    const faculty = await this.facultyRepo.findOne({
+      where: { id: createTeacherDto.facultyId },
+    });
+
+    if (!faculty)
+      throw new NotFoundException(
+        `Faculty with id ${createTeacherDto.facultyId} not found`,
+      );
+
     try {
-      const teacher = this.teacherRepository.create(createTeacherDto);
-      await this.teacherRepository.save(teacher);
+      const teacher = this.teacherRepo.create({
+        ...createTeacherDto,
+        faculty,
+      });
+
+      await this.teacherRepo.save(teacher);
 
       return teacher;
     } catch (error) {
@@ -44,15 +61,17 @@ export class TeachersService {
   async findAll(paginationDto: PaginationDto) {
     const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
 
-    return this.teacherRepository.find({
+    return this.teacherRepo.find({
       take: limit,
       skip: offset,
+      relations: ['faculty'],
     });
   }
 
   async findOne(id: string) {
-    const teacher = await this.teacherRepository.findOneBy({
-      id,
+    const teacher = await this.teacherRepo.findOne({
+      where: { id },
+      relations: ['faculty'],
     });
 
     if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
@@ -61,7 +80,21 @@ export class TeachersService {
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
-    const teacher = await this.teacherRepository.preload({
+    if (!Object.keys(updateTeacherDto).length)
+      throw new BadRequestException('No fields provided for update');
+
+    if (updateTeacherDto.facultyId) {
+      const faculty = await this.facultyRepo.findOne({
+        where: { id: updateTeacherDto.facultyId },
+      });
+
+      if (!faculty)
+        throw new NotFoundException(
+          `Faculty with id ${updateTeacherDto.facultyId} not found`,
+        );
+    }
+
+    const teacher = await this.teacherRepo.preload({
       id,
       ...updateTeacherDto,
     });
@@ -69,8 +102,8 @@ export class TeachersService {
     if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
 
     try {
-      await this.teacherRepository.save(teacher);
-      return teacher;
+      await this.teacherRepo.save(teacher);
+      return this.findOne(id);
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -80,10 +113,31 @@ export class TeachersService {
     const teacher = await this.findOne(id);
 
     if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
-    console.log(teacher);
 
-    await this.teacherRepository.remove(teacher);
+    await this.teacherRepo.remove(teacher);
     return teacher;
+  }
+
+  async findByFaculty(facultyId: string, paginationDto: PaginationDto) {
+    const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
+
+    const faculty = await this.facultyRepo.findOne({
+      where: {
+        id: facultyId,
+      },
+    });
+
+    if (!faculty)
+      throw new NotFoundException(`Faculty with ${facultyId} not found`);
+
+    return this.teacherRepo.find({
+      where: {
+        faculty: { id: facultyId },
+      },
+      relations: ['faculty'],
+      take: limit,
+      skip: offset,
+    });
   }
 
   private handleDBExceptions(error: any) {

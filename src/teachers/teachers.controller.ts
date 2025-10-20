@@ -28,21 +28,29 @@ export class TeachersController {
     return this.teachersService.findAll(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.teachersService.findOne(id);
+  @Get('faculty/:uuid')
+  findByFaculty(
+    @Param('uuid', ParseUUIDPipe) uuid: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.teachersService.findByFaculty(uuid, paginationDto);
   }
 
-  @Patch(':id')
+  @Get(':uuid')
+  findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.teachersService.findOne(uuid);
+  }
+
+  @Patch(':uuid')
   update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('uuid', ParseUUIDPipe) uuid: string,
     @Body() updateTeacherDto: UpdateTeacherDto,
   ) {
-    return this.teachersService.update(id, updateTeacherDto);
+    return this.teachersService.update(uuid, updateTeacherDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.teachersService.remove(id);
+  @Delete(':uuid')
+  remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.teachersService.remove(uuid);
   }
 }
