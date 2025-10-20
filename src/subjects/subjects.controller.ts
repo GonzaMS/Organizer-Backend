@@ -28,21 +28,21 @@ export class SubjectsController {
     return this.subjectsService.findAll(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.subjectsService.findOne(id);
+  @Get(':uuid')
+  findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.subjectsService.findOne(uuid);
   }
 
-  @Patch(':id')
+  @Patch(':uuid')
   update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('uuid', ParseUUIDPipe) uuid: string,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
-    return this.subjectsService.update(id, updateSubjectDto);
+    return this.subjectsService.update(uuid, updateSubjectDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.subjectsService.remove(id);
+  @Delete(':uuid')
+  remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.subjectsService.remove(uuid);
   }
 }
