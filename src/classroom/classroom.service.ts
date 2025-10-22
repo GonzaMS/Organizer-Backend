@@ -63,14 +63,18 @@ export class ClassroomService {
     return this.classroomRepo.find({
       take: limit,
       skip: offset,
-      relations: ['faculty'],
+      relations: {
+        faculty: true,
+      },
     });
   }
 
   async findOne(id: string) {
     const classroom = await this.classroomRepo.findOne({
       where: { id },
-      relations: ['faculty'],
+      relations: {
+        faculty: true,
+      },
     });
 
     if (!classroom)
@@ -134,7 +138,9 @@ export class ClassroomService {
       where: {
         faculty: { id: facultyId },
       },
-      relations: ['faculty'],
+      relations: {
+        faculty: true,
+      },
       take: limit,
       skip: offset,
     });
