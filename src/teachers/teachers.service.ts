@@ -64,14 +64,18 @@ export class TeachersService {
     return this.teacherRepo.find({
       take: limit,
       skip: offset,
-      relations: ['faculty'],
+      relations: {
+        faculty: true,
+      },
     });
   }
 
   async findOne(id: string) {
     const teacher = await this.teacherRepo.findOne({
       where: { id },
-      relations: ['faculty'],
+      relations: {
+        faculty: true,
+      },
     });
 
     if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
@@ -134,7 +138,9 @@ export class TeachersService {
       where: {
         faculty: { id: facultyId },
       },
-      relations: ['faculty'],
+      relations: {
+        faculty: true,
+      },
       take: limit,
       skip: offset,
     });
