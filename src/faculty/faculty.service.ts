@@ -34,7 +34,7 @@ export class FacultyService {
     try {
       const faculty = this.facultyService.create(createFacultyDto);
 
-      await this.facultyService.save(createFacultyDto);
+      await this.facultyService.save(faculty);
 
       return faculty;
     } catch (error) {
@@ -54,28 +54,6 @@ export class FacultyService {
   async findOne(id: string) {
     const faculty = await this.facultyService.findOneBy({
       id,
-    });
-
-    if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
-
-    return faculty;
-  }
-
-  async findOneWithTeachers(id: string) {
-    const faculty = await this.facultyService.findOne({
-      where: { id },
-      relations: ['teacher'],
-    });
-
-    if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
-
-    return faculty;
-  }
-
-  async findOneWithClassrooms(id: string) {
-    const faculty = await this.facultyService.findOne({
-      where: { id },
-      relations: ['classroom'],
     });
 
     if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
