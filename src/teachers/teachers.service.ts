@@ -34,19 +34,17 @@ export class TeachersService {
     this.offset = configService.get<number>('OFFSET')!;
   }
 
-  async create(createTeacherDto: CreateTeacherDto) {
-    const faculty = await this.facultyRepo.findOne({
-      where: { id: createTeacherDto.facultyId },
+  async create({ facultyId, ...teacherData }: CreateTeacherDto) {
+    const faculty = await this.facultyRepo.findOneBy({
+      id: facultyId,
     });
 
     if (!faculty)
-      throw new NotFoundException(
-        `Faculty with id ${createTeacherDto.facultyId} not found`,
-      );
+      throw new NotFoundException(`Faculty with id ${facultyId} not found`);
 
     try {
       const teacher = this.teacherRepo.create({
-        ...createTeacherDto,
+        ...teacherData,
         faculty,
       });
 
@@ -83,24 +81,26 @@ export class TeachersService {
     return teacher;
   }
 
-  async update(id: string, updateTeacherDto: UpdateTeacherDto) {
-    if (!Object.keys(updateTeacherDto).length)
+  async update(id: string, { facultyId, ...teacherData }: UpdateTeacherDto) {
+    if (!Object.keys(teacherData).length)
       throw new BadRequestException('No fields provided for update');
 
-    if (updateTeacherDto.facultyId) {
-      const faculty = await this.facultyRepo.findOne({
-        where: { id: updateTeacherDto.facultyId },
+    //TODO: Fix this for better aproach type in all endpoints
+    let faculty: any;
+
+    if (facultyId) {
+      faculty = await this.facultyRepo.findOneBy({
+        id: facultyId,
       });
 
       if (!faculty)
-        throw new NotFoundException(
-          `Faculty with id ${updateTeacherDto.facultyId} not found`,
-        );
+        throw new NotFoundException(`Faculty with id ${facultyId} not found`);
     }
 
     const teacher = await this.teacherRepo.preload({
       id,
-      ...updateTeacherDto,
+      ...teacherData,
+      faculty,
     });
 
     if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
@@ -125,10 +125,8 @@ export class TeachersService {
   async findByFaculty(facultyId: string, paginationDto: PaginationDto) {
     const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
 
-    const faculty = await this.facultyRepo.findOne({
-      where: {
-        id: facultyId,
-      },
+    const faculty = await this.facultyRepo.findOneBy({
+      id: facultyId,
     });
 
     if (!faculty)
