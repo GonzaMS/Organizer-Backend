@@ -97,8 +97,6 @@ export class TeachersService {
   async remove(id: string) {
     const teacher = await this.findOne(id);
 
-    if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
-
     await this.teacherRepo.remove(teacher);
     return teacher;
   }
