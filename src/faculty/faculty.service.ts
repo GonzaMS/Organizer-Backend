@@ -23,6 +23,7 @@ export class FacultyService {
   constructor(
     @InjectRepository(Faculty)
     private readonly facultyService: Repository<Faculty>,
+
     private readonly configService: ConfigService,
   ) {
     this.defaultLimit = configService.get<number>('DEFAULT_LIMIT')!;
@@ -32,6 +33,7 @@ export class FacultyService {
   async create(createFacultyDto: CreateFacultyDto) {
     try {
       const faculty = this.facultyService.create(createFacultyDto);
+
       await this.facultyService.save(createFacultyDto);
 
       return faculty;
@@ -82,15 +84,15 @@ export class FacultyService {
   }
 
   async update(id: string, updateFacultyDto: UpdateFacultyDto) {
+    if (!Object.keys(updateFacultyDto).length)
+      throw new BadRequestException('No fields provided for update');
+
     const faculty = await this.facultyService.preload({
       id,
       ...updateFacultyDto,
     });
 
     if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
-
-    if (!Object.keys(updateFacultyDto).length)
-      throw new BadRequestException('No fields provided for update');
 
     try {
       await this.facultyService.save(faculty);
@@ -106,7 +108,6 @@ export class FacultyService {
     if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
 
     await this.facultyService.remove(faculty);
-
     return faculty;
   }
 
