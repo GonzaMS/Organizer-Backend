@@ -1,8 +1,14 @@
+import { Faculty } from 'src/faculty/entities/faculty.entity';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { Teacher } from 'src/teachers/entities/teacher.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -14,18 +20,32 @@ export class Subject {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   code: string;
 
   @Column({ type: 'int' })
   weeklyHours: number;
 
-  @Column({ type: 'int' })
-  studentCount: number;
+  //TODO: Maybe do this for students in the future
+  // @Column({ type: 'int' })
+  // studentCount: number;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => Faculty, (faculty) => faculty.subjects, {
+    onDelete: 'CASCADE',
+  })
+  faculty: Faculty;
+
+  @ManyToOne(() => Teacher, (teacher) => teacher.subjects, {
+    onDelete: 'SET NULL',
+  })
+  teacher: Teacher;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.subject)
+  schedules: Schedule[];
 }

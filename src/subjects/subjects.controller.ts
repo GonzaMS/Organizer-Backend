@@ -28,6 +28,11 @@ export class SubjectsController {
     return this.subjectsService.findAll(paginationDto);
   }
 
+  @Get('teachers/:uuid')
+  findAllSubjectsFromTeacher(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.subjectsService.findAllSubjectsFromTeacher(uuid);
+  }
+
   @Get(':uuid')
   findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
     return this.subjectsService.findOne(uuid);

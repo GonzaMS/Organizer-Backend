@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateSubjectDto {
   @IsString()
@@ -7,12 +7,13 @@ export class CreateSubjectDto {
   @IsString()
   name: string;
 
-  @IsOptional()
   @IsInt()
-  @Min(0)
-  credits?: number;
+  @Min(1)
+  weeklyHours: number;
 
-  @IsOptional()
-  @IsString()
-  department?: string;
+  @IsUUID()
+  facultyId: string;
+
+  @IsUUID()
+  teacherId: string;
 }
