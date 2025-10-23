@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Subject } from 'src/subjects/entities/subject.entity';
 
 @Entity()
 export class Faculty {
@@ -17,6 +18,9 @@ export class Faculty {
   @Column({ unique: true })
   facultyName: string;
 
+  @Column({ default: true })
+  active: boolean;
+
   @CreateDateColumn()
   createAt: Date;
 
@@ -25,10 +29,13 @@ export class Faculty {
 
   // Relations
   @OneToMany(() => Teacher, (teacher) => teacher.faculty, { cascade: true })
-  teacher: Teacher[];
+  teachers: Teacher[];
 
   @OneToMany(() => Classroom, (classroom) => classroom.faculty, {
     cascade: true,
   })
   classroom: Classroom[];
+
+  @OneToMany(() => Subject, (subject) => subject.faculty)
+  subjects: Subject[];
 }
