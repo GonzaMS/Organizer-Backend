@@ -18,7 +18,8 @@ import { Faculty } from 'src/faculty/entities/faculty.entity';
 export class ClassroomService {
   private defaultLimit: number;
   private offset: number;
-  private logger = new Logger();
+
+  private logger = new Logger('ClassroomService');
 
   constructor(
     @InjectRepository(Classroom)
@@ -34,12 +35,7 @@ export class ClassroomService {
   }
 
   async create({ facultyId, ...classroomData }: CreateClassroomDto) {
-    const faculty = await this.facultyRepo.findOneBy({
-      id: facultyId,
-    });
-
-    if (!faculty)
-      throw new NotFoundException(`Faculty with id ${facultyId} not found`);
+    const faculty = await this.validateFaculty(facultyId);
 
     try {
       const classroom = this.classroomRepo.create({
@@ -60,18 +56,12 @@ export class ClassroomService {
     return this.classroomRepo.find({
       take: limit,
       skip: offset,
-      relations: {
-        faculty: true,
-      },
     });
   }
 
   async findOne(id: string) {
-    const classroom = await this.classroomRepo.findOne({
-      where: { id },
-      relations: {
-        faculty: true,
-      },
+    const classroom = await this.classroomRepo.findOneBy({
+      id,
     });
 
     if (!classroom)
@@ -87,16 +77,9 @@ export class ClassroomService {
     if (!Object.keys(classroomData).length)
       throw new BadRequestException('No fields provided for update');
 
-    let faculty: any;
-
-    if (facultyId) {
-      faculty = await this.facultyRepo.findOneBy({
-        id: facultyId,
-      });
-
-      if (!faculty)
-        throw new NotFoundException(`Faculty with id ${facultyId} not found`);
-    }
+    const faculty = facultyId
+      ? await this.validateFaculty(facultyId)
+      : undefined;
 
     const classroom = await this.classroomRepo.preload({
       id,
@@ -128,25 +111,17 @@ export class ClassroomService {
   async findByFaculty(facultyId: string, paginationDto: PaginationDto) {
     const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
 
-    const faculty = await this.facultyRepo.findOneBy({
-      id: facultyId,
-    });
+    await this.validateFaculty(facultyId);
 
-    if (!faculty)
-      throw new NotFoundException(`Faculty with ${facultyId} not found`);
+    const classroomByFaculty = this.classroomRepo
+      .createQueryBuilder('classroom')
+      .leftJoinAndSelect('classroom.faculty', 'faculty')
+      .where('faculty.id = :facultyId', { facultyId })
+      .take(limit)
+      .skip(offset)
+      .getMany();
 
-    return this.classroomRepo.find({
-      where: {
-        faculty: { id: facultyId },
-      },
-
-      relations: {
-        faculty: true,
-      },
-
-      take: limit,
-      skip: offset,
-    });
+    return classroomByFaculty;
   }
 
   private handleDBExceptions(error: any) {
@@ -170,5 +145,21 @@ export class ClassroomService {
     // We get the column match on message and return that text
     const match = detail.match(/column "([^"]+)"/);
     return match ? match[1] : undefined;
+  }
+
+  /**
+   * Validates if a faculty exists and returns it
+   * @param facultyId - The faculty ID to validate
+   * @returns The faculty entity
+   * @throws NotFoundException if faculty doesn't exist
+   */
+  private async validateFaculty(facultyId: string): Promise<Faculty> {
+    const faculty = await this.facultyRepo.findOneBy({ id: facultyId });
+
+    if (!faculty) {
+      throw new NotFoundException(`Faculty with id ${facultyId} not found`);
+    }
+
+    return faculty;
   }
 }
