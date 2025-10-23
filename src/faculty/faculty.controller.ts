@@ -28,16 +28,6 @@ export class FacultyController {
     return this.facultyService.findAll(paginationDto);
   }
 
-  @Get(':uuid/teachers')
-  findOneWithTeachers(@Param('uuid', ParseUUIDPipe) uuid: string) {
-    return this.facultyService.findOneWithTeachers(uuid);
-  }
-
-  @Get(':uuid/classrooms')
-  findOneWithClassrooms(@Param('uuid', ParseUUIDPipe) uuid: string) {
-    return this.facultyService.findOneWithClassrooms(uuid);
-  }
-
   @Get(':uuid')
   findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
     return this.facultyService.findOne(uuid);
