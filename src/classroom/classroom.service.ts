@@ -101,9 +101,6 @@ export class ClassroomService {
   async remove(id: string) {
     const classroom = await this.findOne(id);
 
-    if (!classroom)
-      throw new NotFoundException(`Classroom with ${id} not found`);
-
     await this.classroomRepo.remove(classroom);
     return { message: `Classroom with id ${id} has been removed` };
   }

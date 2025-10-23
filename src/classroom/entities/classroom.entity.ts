@@ -1,9 +1,11 @@
 import { Faculty } from 'src/faculty/entities/faculty.entity';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -34,4 +36,7 @@ export class Classroom {
 
   @ManyToOne(() => Faculty, (faculty) => faculty.classroom)
   faculty: Faculty;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.classroom)
+  schedules: Schedule[];
 }
