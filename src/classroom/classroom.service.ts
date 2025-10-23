@@ -33,24 +33,21 @@ export class ClassroomService {
     this.offset = configService.get<number>('OFFSET')!;
   }
 
-  async create(createClassroomDto: CreateClassroomDto) {
+  async create({ facultyId, ...classroomData }: CreateClassroomDto) {
     const faculty = await this.facultyRepo.findOneBy({
-      id: createClassroomDto.facultyId,
+      id: facultyId,
     });
 
     if (!faculty)
-      throw new NotFoundException(
-        `Faculty with id ${createClassroomDto.facultyId} not found`,
-      );
+      throw new NotFoundException(`Faculty with id ${facultyId} not found`);
 
     try {
       const classroom = this.classroomRepo.create({
-        ...createClassroomDto,
+        ...classroomData,
         faculty,
       });
 
       await this.classroomRepo.save(classroom);
-
       return classroom;
     } catch (error) {
       this.handleDBExceptions(error);
@@ -83,24 +80,28 @@ export class ClassroomService {
     return classroom;
   }
 
-  async update(id: string, updateClassroomDto: UpdateClassroomDto) {
-    if (!Object.keys(updateClassroomDto).length)
+  async update(
+    id: string,
+    { facultyId, ...classroomData }: UpdateClassroomDto,
+  ) {
+    if (!Object.keys(classroomData).length)
       throw new BadRequestException('No fields provided for update');
 
-    if (updateClassroomDto.facultyId) {
-      const faculty = await this.facultyRepo.findOne({
-        where: { id: updateClassroomDto.facultyId },
+    let faculty: any;
+
+    if (facultyId) {
+      faculty = await this.facultyRepo.findOneBy({
+        id: facultyId,
       });
 
       if (!faculty)
-        throw new NotFoundException(
-          `Faculty with id ${updateClassroomDto.facultyId} not found`,
-        );
+        throw new NotFoundException(`Faculty with id ${facultyId} not found`);
     }
 
     const classroom = await this.classroomRepo.preload({
       id,
-      ...updateClassroomDto,
+      ...classroomData,
+      faculty,
     });
 
     if (!classroom)
@@ -127,8 +128,8 @@ export class ClassroomService {
   async findByFaculty(facultyId: string, paginationDto: PaginationDto) {
     const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
 
-    const faculty = await this.facultyRepo.findOne({
-      where: { id: facultyId },
+    const faculty = await this.facultyRepo.findOneBy({
+      id: facultyId,
     });
 
     if (!faculty)
@@ -138,9 +139,11 @@ export class ClassroomService {
       where: {
         faculty: { id: facultyId },
       },
+
       relations: {
         faculty: true,
       },
+
       take: limit,
       skip: offset,
     });
