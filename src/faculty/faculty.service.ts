@@ -83,8 +83,6 @@ export class FacultyService {
   async remove(id: string) {
     const faculty = await this.findOne(id);
 
-    if (!faculty) throw new NotFoundException(`Faculty with ${id} not found`);
-
     await this.facultyService.remove(faculty);
     return faculty;
   }
