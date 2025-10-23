@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SubjectsModule } from './subjects/subjects.module';
 import { FacultyModule } from './faculty/faculty.module';
 import { ClassroomModule } from './classroom/classroom.module';
+import { ScheduleModule } from './schedule/schedule.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ClassroomModule } from './classroom/classroom.module';
     SubjectsModule,
     FacultyModule,
     ClassroomModule,
+    ScheduleModule,
   ],
   controllers: [],
   providers: [],
