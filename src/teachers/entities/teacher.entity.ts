@@ -1,9 +1,11 @@
 import { Faculty } from 'src/faculty/entities/faculty.entity';
+import { Subject } from 'src/subjects/entities/subject.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -34,6 +36,9 @@ export class Teacher {
   @UpdateDateColumn()
   updateAt: Date;
 
-  @ManyToOne(() => Faculty, (faculty) => faculty.teacher)
+  @ManyToOne(() => Faculty, (faculty) => faculty.teachers)
   faculty: Faculty;
+
+  @OneToMany(() => Subject, (subject) => subject.teacher)
+  subjects: Subject[];
 }

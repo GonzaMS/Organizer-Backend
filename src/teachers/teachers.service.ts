@@ -35,12 +35,7 @@ export class TeachersService {
   }
 
   async create({ facultyId, ...teacherData }: CreateTeacherDto) {
-    const faculty = await this.facultyRepo.findOneBy({
-      id: facultyId,
-    });
-
-    if (!faculty)
-      throw new NotFoundException(`Faculty with id ${facultyId} not found`);
+    const faculty = await this.validateFaculty(facultyId);
 
     try {
       const teacher = this.teacherRepo.create({
@@ -62,18 +57,12 @@ export class TeachersService {
     return this.teacherRepo.find({
       take: limit,
       skip: offset,
-      relations: {
-        faculty: true,
-      },
     });
   }
 
   async findOne(id: string) {
-    const teacher = await this.teacherRepo.findOne({
-      where: { id },
-      relations: {
-        faculty: true,
-      },
+    const teacher = await this.teacherRepo.findOneBy({
+      id,
     });
 
     if (!teacher) throw new NotFoundException(`Teacher with ${id} not found`);
@@ -85,17 +74,9 @@ export class TeachersService {
     if (!Object.keys(teacherData).length)
       throw new BadRequestException('No fields provided for update');
 
-    //TODO: Fix this for better aproach type in all endpoints
-    let faculty: any;
-
-    if (facultyId) {
-      faculty = await this.facultyRepo.findOneBy({
-        id: facultyId,
-      });
-
-      if (!faculty)
-        throw new NotFoundException(`Faculty with id ${facultyId} not found`);
-    }
+    const faculty = facultyId
+      ? await this.validateFaculty(facultyId)
+      : undefined;
 
     const teacher = await this.teacherRepo.preload({
       id,
@@ -125,23 +106,17 @@ export class TeachersService {
   async findByFaculty(facultyId: string, paginationDto: PaginationDto) {
     const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
 
-    const faculty = await this.facultyRepo.findOneBy({
-      id: facultyId,
-    });
+    await this.validateFaculty(facultyId);
 
-    if (!faculty)
-      throw new NotFoundException(`Faculty with ${facultyId} not found`);
+    const teacherByFaculty = this.teacherRepo
+      .createQueryBuilder('teacher')
+      .leftJoinAndSelect('teacher.faculty', 'faculty')
+      .where('faculty.id = :facultyId', { facultyId })
+      .take(limit)
+      .skip(offset)
+      .getMany();
 
-    return this.teacherRepo.find({
-      where: {
-        faculty: { id: facultyId },
-      },
-      relations: {
-        faculty: true,
-      },
-      take: limit,
-      skip: offset,
-    });
+    return teacherByFaculty;
   }
 
   private handleDBExceptions(error: any) {
@@ -165,5 +140,21 @@ export class TeachersService {
     // We get the column match on message and return that text
     const match = detail.match(/column "([^"]+)"/);
     return match ? match[1] : undefined;
+  }
+
+  /**
+   * Validates if a faculty exists and returns it
+   * @param facultyId - The faculty ID to validate
+   * @returns The faculty entity
+   * @throws NotFoundException if faculty doesn't exist
+   */
+  private async validateFaculty(facultyId: string): Promise<Faculty> {
+    const faculty = await this.facultyRepo.findOneBy({ id: facultyId });
+
+    if (!faculty) {
+      throw new NotFoundException(`Faculty with id ${facultyId} not found`);
+    }
+
+    return faculty;
   }
 }
