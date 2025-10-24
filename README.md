@@ -1,98 +1,207 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Organizer API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API modular para administrar la planificación académica de una institución. Permite gestionar facultades, docentes, materias, aulas y horarios usando NestJS, TypeORM y PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![Relaciones del dominio](Relations-arquitecture.png)
 
-## Description
+## Características principales
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Gestión completa de las entidades académicas: `Faculty`, `Teacher`, `Subject`, `Classroom` y `Schedule`.
+- Relaciona docentes con materias y aulas con horarios, permitiendo filtrar por facultad o docente.
+- Validaciones automáticas con `class-validator` y `ValidationPipe` global (whitelist + transformación de tipos).
+- Configuración centralizada mediante variables de entorno y `ConfigModule`.
+- Paginación en todos los listados (`limit` y `offset`) con valores por defecto configurables.
+- Docker Compose para levantar rápidamente la base de datos PostgreSQL en local.
 
-## Project setup
+## Stack tecnológico
 
-```bash
-$ npm install
+- Node.js 20+
+- NestJS 11 (Framework backend)
+- TypeScript 5
+- TypeORM 0.3 (ORM)
+- PostgreSQL 17
+- Jest & Supertest (testing)
+- ESLint + Prettier (estilo de código)
+
+## Arquitectura del proyecto
+
+El código se organiza por dominios en módulos independientes dentro de `src/`:
+
+- `faculty`: Facultades y su catálogo.
+- `teachers`: Docentes asociados a cada facultad.
+- `subjects`: Materias impartidas por docentes y vinculadas a facultades.
+- `classroom`: Aulas con capacidad y estado operativo.
+- `schedule`: Bloques horarios que combinan aula + materia (y, por transitividad, docente/facultad).
+- `common`: Utilidades compartidas (DTOs, adapters, pipes, configuración).
+- `seed`: Punto de entrada para sembrar datos (en construcción).
+
+Toda la API expone rutas bajo el prefijo `/api/v1`.
+
+## Requisitos previos
+
+- Node.js 20 o superior
+- npm 10 o superior
+- Docker
+
+## Configuración local
+
+1. **Instalar dependencias**
+
+   ```bash
+   npm install
+   ```
+
+2. **Configurar variables de entorno** (crear un archivo `.env` en el raíz del proyecto):
+
+   ```dotenv
+   PORT=3000
+   NODE_ENV=dev
+   DEFAULT_LIMIT=10
+   OFFSET=0
+
+   POSTGRESQL_HOST=
+   POSTGRESQL_PORT=
+   POSTGRESQL_USER=
+   POSTGRESQL_PASSWORD=
+   POSTGRESQL_DB=organizer
+   ```
+
+3. **Levantar la base de datos (opcional)**
+
+   ```bash
+   docker compose up -d
+   ```
+
+   Los datos se almacenan en `./postgres` mediante un volumen persistente.
+
+4. **Arrancar la API**
+
+   ```bash
+   # modo desarrollo con recarga en caliente
+   npm run start:dev
+
+   # modo producción (requiere compilación previa)
+   npm run build
+   npm run start:prod
+   ```
+
+La aplicación quedará disponible en `http://localhost:3000/api`.
+
+## Scripts disponibles
+
+- `npm run start` &mdash; Inicia la app en modo desarrollo sin watch.
+- `npm run start:dev` &mdash; Desarrollo con recarga automática.
+- `npm run start:prod` &mdash; Ejecuta la versión compilada.
+- `npm run build` &mdash; Transpila el proyecto a `dist/`.
+- `npm run lint` &mdash; Ejecuta ESLint con autofix.
+- `npm run format` &mdash; Aplica Prettier a `src/` y `test/`.
+- `npm run test` &mdash; Pruebas unitarias con Jest.
+- `npm run test:e2e` &mdash; Pruebas end-to-end.
+- `npm run test:cov` &mdash; Cobertura de pruebas.
+
+## Convenciones de la API
+
+- **Base URL**: `http://localhost:3000/api/v1`
+- **Paginación**: `GET` admite `limit` y `offset`.
+- **UUIDs**: Todos los identificadores primarios son UUID y se validan con `ParseUUIDPipe`.
+- **Validación**: Se aplica `ValidationPipe` global (se rechazan atributos no definidos en los DTOs).
+
+## Endpoints principales
+
+### Faculty
+
+| Método | Ruta             | Descripción                                 |
+| ------ | ---------------- | ------------------------------------------- |
+| POST   | `/faculty`       | Crea una facultad.                          |
+| GET    | `/faculty`       | Lista paginada de facultades.               |
+| GET    | `/faculty/:uuid` | Obtiene una facultad por id.                |
+| PATCH  | `/faculty/:uuid` | Actualiza una facultad.                     |
+| DELETE | `/faculty/:uuid` | Elimina una facultad (y datos relacionados) |
+
+### Teachers
+
+| Método | Ruta                      | Descripción                                           |
+| ------ | ------------------------- | ----------------------------------------------------- |
+| POST   | `/teachers`               | Crea un docente asociado a una facultad.              |
+| GET    | `/teachers`               | Lista paginada de docentes.                           |
+| GET    | `/teachers/:uuid`         | Obtiene un docente por id.                            |
+| GET    | `/teachers/faculty/:uuid` | Docentes pertenecientes a una facultad.               |
+| PATCH  | `/teachers/:uuid`         | Actualiza datos del docente (y su facultad si aplica) |
+| DELETE | `/teachers/:uuid`         | Elimina un docente.                                   |
+
+### Subjects
+
+| Método | Ruta                       | Descripción                                    |
+| ------ | -------------------------- | ---------------------------------------------- |
+| POST   | `/subjects`                | Crea una materia (vincula docente y facultad). |
+| GET    | `/subjects`                | Lista paginada de materias.                    |
+| GET    | `/subjects/:uuid`          | Obtiene una materia por id.                    |
+| GET    | `/subjects/teachers/:uuid` | Materias dictadas por un docente.              |
+| PATCH  | `/subjects/:uuid`          | Actualiza la materia, docente o facultad.      |
+| DELETE | `/subjects/:uuid`          | Elimina una materia.                           |
+
+### Classroom
+
+| Método | Ruta                       | Descripción                             |
+| ------ | -------------------------- | --------------------------------------- |
+| POST   | `/classroom`               | Crea un aula con capacidad y estado.    |
+| GET    | `/classroom`               | Lista paginada de aulas.                |
+| GET    | `/classroom/:uuid`         | Obtiene un aula por id.                 |
+| GET    | `/classroom/faculty/:uuid` | Aulas asociadas a una facultad.         |
+| PATCH  | `/classroom/:uuid`         | Actualiza capacidad, estado o facultad. |
+| DELETE | `/classroom/:uuid`         | Elimina un aula.                        |
+
+### Schedule
+
+| Método | Ruta                      | Descripción                                            |
+| ------ | ------------------------- | ------------------------------------------------------ |
+| POST   | `/schedule`               | Crea un bloque horario para aula + materia.            |
+| GET    | `/schedule`               | Lista paginada de horarios.                            |
+| GET    | `/schedule/:uuid`         | Obtiene un horario por id.                             |
+| GET    | `/schedule/faculty/:uuid` | Horarios vinculados a una facultad (según la materia). |
+| PATCH  | `/schedule/:uuid`         | Actualiza horario, aula o materia asociada.            |
+| DELETE | `/schedule/:uuid`         | Elimina un horario.                                    |
+
+### Seed (WIP)
+
+| Método | Ruta    | Descripción                         |
+| ------ | ------- | ----------------------------------- |
+| GET    | `/seed` | Punto de entrada para poblar la BD. |
+
+> ℹ️ El servicio de seed actualmente es un borrador y está listo para implementar la lógica de importación de datos utilizando el `AxiosAdapter`.
+
+## Ejemplos de payload
+
+```json
+POST /api/v1/teachers
+{
+  "name": "Ada Lovelace",
+  "email": "ada.lovelace@example.com",
+  "availability": {
+    "monday": ["08:00-10:00", "14:00-16:00"],
+    "wednesday": ["10:00-12:00"]
+  },
+  "maxHoursPerWeek": 16,
+  "facultyId": "f4c2a5d0-5abf-4b1a-b3ed-1b0d1c2e3f4a"
+}
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```json
+POST /api/v1/schedule
+{
+  "day": "monday",
+  "startTime": "08:00",
+  "endTime": "10:00",
+  "subjectId": "7c5d13ab-65e3-4ffd-bedd-17fdb903fab5",
+  "classroomId": "9c4b8e6f-93e1-4c86-98b0-4b9fc6e54eab"
+}
 ```
 
-## Run tests
+## Relación de datos
 
-```bash
-# unit tests
-$ npm run test
+Resumen de las asociaciones clave (disponible también en `relations.md`):
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Una `Faculty` tiene muchos `Teacher`, `Subject` y `Classroom`.
+- Un `Teacher` puede dictar muchas `Subject`.
+- Una `Subject` se programa en múltiples `Schedule`.
+- Un `Classroom` alberga múltiples `Schedule`.
