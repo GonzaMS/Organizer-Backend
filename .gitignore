@@ -58,5 +58,4 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Estructure files
-Relations-arquitecture.png
 relations.md
