@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Query,
+  Get,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { FacultyService } from './faculty.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { FacultyService } from './faculty.service';
 
-@Controller('v1/faculty')
+@Controller('faculty')
 export class FacultyController {
   constructor(private readonly facultyService: FacultyService) {}
 

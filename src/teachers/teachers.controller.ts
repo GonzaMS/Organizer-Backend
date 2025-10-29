@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Query,
+  Get,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { TeachersService } from './teachers.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { TeachersService } from './teachers.service';
 
-@Controller('v1/teachers')
+@Controller('teachers')
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
