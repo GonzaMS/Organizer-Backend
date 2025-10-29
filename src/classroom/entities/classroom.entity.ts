@@ -23,10 +23,10 @@ export class Classroom {
 
   @Column({
     type: 'enum',
-    enum: ['AVAILABLE', 'MAINTENANCE'],
+    enum: ['AVAILABLE', 'MAINTENANCE', 'OCCUPIED'],
     default: 'AVAILABLE',
   })
-  status: 'AVAILABLE' | 'MAINTENANCE';
+  status: 'AVAILABLE' | 'MAINTENANCE' | 'OCCUPIED';
 
   @CreateDateColumn()
   createdAt: Date;

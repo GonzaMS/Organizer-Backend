@@ -121,6 +121,19 @@ export class ClassroomService {
     return classroomByFaculty;
   }
 
+  async findByStatus(status: string, paginationDto: PaginationDto) {
+    const { limit = this.defaultLimit, offset = this.offset } = paginationDto;
+
+    const classroomByStatus = this.classroomRepo
+      .createQueryBuilder('classroom')
+      .where('classroom.status = :status', { status })
+      .take(limit)
+      .skip(offset)
+      .getMany();
+
+    return classroomByStatus;
+  }
+
   private handleDBExceptions(error: any) {
     this.logger.error(error.detail);
 
