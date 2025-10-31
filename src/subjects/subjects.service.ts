@@ -118,11 +118,11 @@ export class SubjectsService {
   async findAllSubjectsFromTeacher(teacherId: string) {
     await this.validateTeacher(teacherId);
 
-    const teacherWithSubjects = await this.teacherRepo
-      .createQueryBuilder('teacher')
-      .leftJoinAndSelect('teacher.subjects', 'subject')
+    const teacherWithSubjects = await this.subjectRepo
+      .createQueryBuilder('subject')
+      .leftJoinAndSelect('subject.teacher', 'teacher')
       .where('teacher.id = :teacherId', { teacherId })
-      .getOne();
+      .getMany();
 
     return teacherWithSubjects;
   }
