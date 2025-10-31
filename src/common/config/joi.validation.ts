@@ -1,11 +1,19 @@
 import * as Joi from 'joi';
 
 export const JoiValidationSchema = Joi.object({
-  port: Joi.number().default(3000),
+  PORT: Joi.number().default(3000),
 
-  defaultLimit: Joi.number().default(10),
+  DEFAULT_LIMIT: Joi.number().default(10),
 
-  offset: Joi.number().default(0),
+  OFFSET: Joi.number().default(0),
 
-  enviroment: Joi.string().default('dev'),
+  NODE_ENV: Joi.string().default('dev'),
+
+  JWT_SECRET: Joi.string().required(),
+
+  POSTGRESQL_HOST: Joi.string().required(),
+  POSTGRESQL_PORT: Joi.number().required(),
+  POSTGRESQL_USER: Joi.string().required(),
+  POSTGRESQL_DB: Joi.string().required(),
+  POSTGRESQL_PASSWORD: Joi.string().required(),
 });
