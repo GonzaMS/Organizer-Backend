@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { TeachersModule } from './teachers/teachers.module';
-import { SeedModule } from './seed/seed.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { ClassroomModule } from './classroom/classroom.module';
 import { CommonModule } from './common/common.module';
-import { ConfigModule } from '@nestjs/config';
 import { EnvConfiguration } from './common/config/env.config';
 import { JoiValidationSchema } from './common/config/joi.validation';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { SubjectsModule } from './subjects/subjects.module';
 import { FacultyModule } from './faculty/faculty.module';
-import { ClassroomModule } from './classroom/classroom.module';
+import { OptimizerModule } from './optimizer/optimizer.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { SubjectsModule } from './subjects/subjects.module';
+import { TeachersModule } from './teachers/teachers.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -18,25 +20,34 @@ import { ScheduleModule } from './schedule/schedule.module';
       validationSchema: JoiValidationSchema,
     }),
 
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.POSTGRESQL_HOST,
-      port: Number(process.env.POSTGRESQL_PORT),
-      username: process.env.POSTGRESQL_USER,
-      database: process.env.POSTGRESQL_DB,
-      password: process.env.POSTGRESQL_PASSWORD,
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        return {
+          type: 'postgres',
+          host: configService.get<string>('databaseHost'),
+          port: configService.get<number>('databasePort'),
+          username: configService.get<string>('databaseUsername'),
+          database: configService.get<string>('databaseDatabase'),
+          password: configService.get<string>('databasePassword'),
+          autoLoadEntities: true,
+          synchronize: true,
+        };
+      },
+      inject: [ConfigService],
     }),
 
     TeachersModule,
-    SeedModule,
     CommonModule,
     SubjectsModule,
     FacultyModule,
     ClassroomModule,
     ScheduleModule,
+    AuthModule,
+    UsersModule,
+    OptimizerModule,
   ],
+
   controllers: [],
   providers: [],
 })
